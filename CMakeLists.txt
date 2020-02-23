@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 2.8)
+
+project(zmq-demo)
+
+include(GNUInstallDirs)
+
+message(STATUS ${GNUInstallDirs})
+
+add_definitions(-std=c++11)
+add_compile_options("-O3")
+
+ADD_SUBDIRECTORY(src)
