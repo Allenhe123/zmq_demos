@@ -6,7 +6,7 @@ include(GNUInstallDirs)
 
 message(STATUS ${GNUInstallDirs})
 
-add_definitions(-std=c++11)
+add_definitions(-std=c++17)
 add_compile_options("-O3")
 
 ADD_SUBDIRECTORY(src)

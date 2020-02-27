@@ -4,6 +4,7 @@
 #include <thread>
 #include <future>
 #include <chrono>
+#include <optional>
 
 uint64_t Now() {
   auto now = std::chrono::high_resolution_clock::now();
@@ -45,10 +46,10 @@ int main (int argc, char** argv)
             static uint32_t count = 1;
 
             zmq::message_t msg_topic;
-            socket.recv (&msg_topic);
+            auto size1 = socket.recv (msg_topic);
 
             zmq::message_t msg;
-            socket.recv (&msg);
+            auto size2 = socket.recv (msg);
 
             uint64_t send_time = string_to_uint64((char*)msg.data());
             uint64_t delta = Now() - send_time;
@@ -58,6 +59,11 @@ int main (int argc, char** argv)
                 std::cout << "average delta-time: " << time_sum / count << std::endl;
             }
             std::cout << "delta-time: " << deltatime << " count: " << count << std::endl;
+            if (size1.has_value()) std::cout << "recv topic size: " << size1.value() << std::endl;
+            else std::cout << "recv topic msg failed" << std::endl;
+            if (size2.has_value()) std::cout << "recv msg size: " << size2.value() << std::endl;
+            else std::cout << "recv msg failed" << std::endl;
+
             count++;
         }
     });
@@ -88,10 +94,10 @@ int main (int argc, char** argv)
             memset(msg.data(), 0, msgsize);
             snprintf((char*) msg.data(), msgsize, "%llu", Now());
 
-            socket.send(msg_topic, ZMQ_SNDMORE);
-            socket.send(msg, ZMQ_DONTWAIT);
+            auto ret1 = socket.send(msg_topic, ZMQ_SNDMORE);
+            auto ret2 = socket.send(msg, ZMQ_DONTWAIT);
 
-            std::cout << "pub: " << i << std::endl;
+            std::cout << "pub: " << i << " send topic: " << ret1 << " send msg: " << ret2 << std::endl;
 
             std::this_thread::sleep_for(std::chrono::milliseconds(interval));
         }
