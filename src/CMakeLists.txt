@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(zmq-demo)
 
+include_directories(${CMAKE_BINARY_DIR})
+message(STATUS "##CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
+#include_directories
+include_directories(${PROJECT_BINARY_DIR}/cyberRT)
+
 
 # find gflags
 find_package(ZeroMQ REQUIRED)

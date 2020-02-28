@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package zmq.demo;
+
+
+message Frame {
+  optional uint32 frame_id = 1;
+  optional uint32 height = 2;   // image height, that is, number of rows
+  optional uint32 width = 3;    // image width, that is, number of columns
+  optional uint32 step = 4;     // Full row length in bytes
+  optional uint64 address = 5;
+  optional uint64 address_yuv420p = 6;
+}
