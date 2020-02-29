@@ -7,6 +7,9 @@ message(STATUS "##CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 #include_directories
 include_directories(${PROJECT_BINARY_DIR}/cyberRT)
 
+include_directories(${CMAKE_BINARY_DIR}/proto)
+link_directories(${CMAKE_BINARY_DIR}/proto)
+
 
 # find gflags
 find_package(ZeroMQ REQUIRED)
@@ -35,10 +38,10 @@ add_executable(cppzmq_demo1 cppzmq_demo.cc)
 target_link_libraries(cppzmq_demo1 zmq)
 
 add_executable(cppzmq_srv cppzmq_demo_srv.cc)
-target_link_libraries(cppzmq_srv zmq)
+target_link_libraries(cppzmq_srv zmq zmq_proto)
 
 add_executable(cppzmq_client cppzmq_demo_client.cc)
-target_link_libraries(cppzmq_client zmq)
+target_link_libraries(cppzmq_client zmq zmq_proto)
 
 add_executable(cppzmq_pub cppzmq_demo_pub.cc)
 target_link_libraries(cppzmq_pub zmq)
