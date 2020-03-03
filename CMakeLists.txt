@@ -10,3 +10,4 @@ add_definitions(-std=c++17)
 add_compile_options("-O3")
 
 ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(tlszmq)
