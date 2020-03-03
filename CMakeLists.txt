@@ -11,3 +11,4 @@ add_compile_options("-O3")
 
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(tlszmq)
+ADD_SUBDIRECTORY(proto)
