@@ -10,10 +10,15 @@ include_directories(${PROJECT_BINARY_DIR}/cyberRT)
 include_directories(${CMAKE_BINARY_DIR}/proto)
 link_directories(${CMAKE_BINARY_DIR}/proto)
 
+message(STATUS "CMAKE_MODULE_PATH: " ${CMAKE_MODULE_PATH})
 
-# find gflags
 find_package(ZeroMQ REQUIRED)
-message(STATUS ${ZeroMQ_INCLUDE_DIRS})
+if (NOT ZeroMQ_FOUND)
+    message(FATAL_ERROR "ZeroMQ not found")
+else()
+    message(STATUS "ZeroMQ_INCLUDE_DIRS: ${ZeroMQ_INCLUDE_DIR}")
+    message(STATUS "ZeroMQ_LIBS: ${ZeroMQ_LIBRARY}")
+endif(NOT ZeroMQ_FOUND)
 include_directories(${ZeroMQ_INCLUDE_DIRS})
 
 add_executable(demo1_srv demo1_srv.cc)

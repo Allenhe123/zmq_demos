@@ -13,29 +13,30 @@ find_package(ZeroMQ REQUIRED)
 if (NOT ZeroMQ_FOUND)
     message(FATAL_ERROR "ZeroMQ not found")
 else()
-    message(STATUS "ZeroMQ include dir: " ${ZeroMQ_INCLUDE_DIRS})
-    message(STATUS "ZeroMQ lib dir: " ${ZeroMQ_LIBS})
+    message(STATUS "ZeroMQ include dir: ${ZeroMQ_INCLUDE_DIR}")
+    message(STATUS "ZeroMQ lib dir: ${ZeroMQ_LIBRARY}")
 endif(NOT ZeroMQ_FOUND)
-include_directories(${ZeroMQ_INCLUDE_DIRS})
+include_directories(${ZeroMQ_INCLUDE_DIR})
 
+# set(openssl_DIR )
 
 # find openssl
-find_package(openssl REQUIRED)
-if (NOT openssl_FOUND)
-    message(FATAL_ERROR "openssl not found")
+find_package(OpenSSL REQUIRED)
+if (NOT OpenSSL_FOUND)
+    message(STATUS "OpenSSL not found")
 else()
-    message(STATUS "openssl include dir: " ${openssl_INCLUDE_DIRS})
-    message(STATUS "openssl lib dir: " ${openssl_LIBS})
-endif(NOT openssl_FOUND)
-message(STATUS ${openssl_INCLUDE_DIRS})
-include_directories(${openssl_INCLUDE_DIRS})
+    message(STATUS "OpenSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
+    message(STATUS "OpenSSL_SSL_LIBRARY: ${OPENSSL_SSL_LIBRARY}")
+endif(NOT OpenSSL_FOUND)
+
+include_directories(${OpenSSL_INCLUDE_DIR})
 
 
 add_executable(device device.cpp)
 target_link_libraries(device zmq ssl)
 
-add_executable(tlszmq_srv tlsserver.cpp)
+add_executable(tlszmq_srv tlsserver.cpp tlszmq.cpp)
 target_link_libraries(tlszmq_srv zmq ssl)
 
-add_executable(tlszmq_client tlsclient.cpp)
+add_executable(tlszmq_client tlsclient.cpp tlszmq.cpp)
 target_link_libraries(tlszmq_client zmq ssl)
