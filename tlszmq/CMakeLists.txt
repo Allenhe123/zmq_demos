@@ -33,10 +33,10 @@ include_directories(${OpenSSL_INCLUDE_DIR})
 
 
 add_executable(device device.cpp)
-target_link_libraries(device zmq ssl)
+target_link_libraries(device zmq ssl crypto)
 
-add_executable(tlszmq_srv tlsserver.cpp tlszmq.cpp)
-target_link_libraries(tlszmq_srv zmq ssl)
+add_executable(tlszmq_srv tlsserver.cpp tlszmq.cpp tlsexception.cpp)
+target_link_libraries(tlszmq_srv zmq ssl crypto)
 
-add_executable(tlszmq_client tlsclient.cpp tlszmq.cpp)
-target_link_libraries(tlszmq_client zmq ssl)
+add_executable(tlszmq_client tlsclient.cpp tlszmq.cpp tlsexception.cpp)
+target_link_libraries(tlszmq_client zmq ssl crypto)

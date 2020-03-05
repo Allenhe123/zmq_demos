@@ -120,9 +120,9 @@ SSL_CTX *TLSZmq::init_ctx(int mode) {
 
     const SSL_METHOD* meth;
     if (SSL_CLIENT == mode) {
-    	meth = SSLv3_client_method ();
+    	meth = SSLv23_client_method();
     } else if (SSL_SERVER == mode) {
-    	 meth = SSLv3_server_method ();
+    	 meth = SSLv23_server_method();
     } else {
     	throw TLSException("Error: Invalid SSL mode. Valid modes are TLSZmq::SSL_CLIENT and TLSZmq::SSL_SERVER");
     }
