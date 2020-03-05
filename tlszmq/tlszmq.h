@@ -16,9 +16,7 @@ class TLSZmq {
 	static SSL_CTX *init_ctx(int mode);
 
         TLSZmq(SSL_CTX *ctx);
-        TLSZmq( SSL_CTX *ctx,
-       		const char *certificate,
-                const char *key);
+        TLSZmq( SSL_CTX *ctx, const char *certificate, const char *key);
         virtual ~TLSZmq();
 
         bool can_recv();

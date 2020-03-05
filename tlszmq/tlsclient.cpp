@@ -1,16 +1,17 @@
 #include "tlszmq.h"
 #include <zmq.hpp>
 
-void write_message(TLSZmq *tls, zmq::socket_t *socket) {
+#include <memory>
+
+void write_message(const std::unique_ptr<TLSZmq>& tls, zmq::socket_t *socket) {
     if(tls->needs_write()) {
         zmq::message_t *data = tls->get_data();
-
         socket->send(*data);
         delete data;
     }
 }
 
-zmq::message_t *read_message(TLSZmq *tls, zmq::socket_t *socket) {
+zmq::message_t *read_message(const std::unique_ptr<TLSZmq>& tls, zmq::socket_t *socket) {
 	zmq::message_t response;
 	socket->recv (&response);
 	tls->put_data(&response);
@@ -28,13 +29,15 @@ int main(int argc, char* argv[]) {
         zmq::context_t ctx(1);
         zmq::socket_t s1(ctx,ZMQ_REQ);
         s1.connect ("tcp://localhost:5556");
-        TLSZmq *tls = new TLSZmq(ssl_context);
+        // TLSZmq *tls = new TLSZmq(ssl_context);
+
+        std::unique_ptr<TLSZmq> tls = std::make_unique<TLSZmq>(ssl_context);
 
         bool loop = true;
-        zmq::message_t request (12);  
-        memcpy(request.data(), "hello world!", 12);
+        zmq::message_t request (32);  
+        memcpy(request.data(), "hello world!", 32);
 
-        printf("Sending - [%s]\n",(char *)(request.data()));
+        printf("client sending - [%s]\n",(char *)(request.data()));
         tls->write(&request);
 
         while (loop) {
@@ -42,7 +45,7 @@ int main(int argc, char* argv[]) {
             zmq::message_t *data = read_message(tls, &s1);
 
             if (NULL != data) {
-        		printf("Received - [%s]\n",(char *)(data->data()));
+        		printf("client received - [%s]\n",(char *)(data->data()));
             	loop = false;
             }
         }
@@ -51,7 +54,7 @@ int main(int argc, char* argv[]) {
 		tls->shutdown();
 		write_message(tls, &s1);
 
-        delete tls;
+        // delete tls;
     }
     catch(std::exception &e) {
         printf ("An error occurred: %s\n", e.what());
