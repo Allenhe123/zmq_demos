@@ -12,10 +12,10 @@ std::string read_message(zmq::message_t *request, zmq::socket_t *socket) {
 	//read ROUTER envelope containing sender identity.
     do {
         socket->recv(request);
-		size = request->size();
+        size = request->size();
         if (size > 0) {
-		id.assign(static_cast<char*>(request->data()), request->size());
-	}
+            id.assign(static_cast<char*>(request->data()), request->size());
+        }
 
         socket->send(*request, ZMQ_SNDMORE);
     } while(size > 0);
@@ -29,6 +29,7 @@ void write_message(TLSZmq *tls, zmq::socket_t *socket) {
     if (tls->needs_write()) {
         zmq::message_t *data = tls->get_data();
         socket->send(*data);
+        delete data;
     }
 }
 
@@ -50,14 +51,14 @@ int main(int argc, char* argv[]) {
 
             // Retrieve or create the TLSZmq handler for this client
             TLSZmq *tls;
-            if(conns.find(ident) == conns.end()
-            		|| conns.find(ident)->second == NULL) {
+            if(conns.find(ident) == conns.end() || conns.find(ident)->second == NULL) {
                 tls = new TLSZmq(ssl_context, s_crt.c_str(), s_key.c_str());
                 conns[ident] = tls;
             } else {
                 tls = conns[ident];
             }
 
+            // recv的数据是tls加密后的，还需要用tls解密
             tls->put_data(&request);
             zmq::message_t *data = tls->read();
             

@@ -9,6 +9,15 @@
 #include <openssl/ssl.h>
 #include <zmq.hpp>
 
+/*
+send:  app_to_ssl  --> ssl_to_zmq  --> ....
+recv:  zmq_to_ssl  --> ssl_to_app  --> ....
+
+openssl可以使用SSL和BIO两种方式实现SSL，如果使用BIO方式，那么就是上面说的这一种，
+最终的IO是要调用BIO_write和 BIO_read来进行的，用BIO实现的ssl关键在于在io之前必须
+设置好套接字BIO和ssl类型的BIO以及SSL结构体之间的联系，这是通过 BIO_set_ssl和BIO_push来实现的。 
+*/
+
 class TLSZmq {
     public:
 	enum {SSL_CLIENT = 0, SSL_SERVER = 1};

@@ -31,7 +31,6 @@ TLSZmq::TLSZmq(
 
 void TLSZmq::shutdown() {
     int ret = SSL_shutdown(ssl);
-
     switch (ret) {
         case 0:
             SSL_shutdown(ssl);
@@ -52,26 +51,25 @@ TLSZmq::~TLSZmq() {
     delete ssl_to_zmq;
 }
 
-void TLSZmq::update() 
+void TLSZmq::update()
 {
-    // Copy the data from the ZMQ message to the memory BIO
+    // If we have data to recv/read, Copy the data from the ZMQ message to the memory BIO
     if (zmq_to_ssl->size() > 0) {
+        // write data from zmq_to_ssl to rbio
         int rc = BIO_write(rbio, zmq_to_ssl->data(), zmq_to_ssl->size());
         zmq_to_ssl->rebuild(0);
     }
     
-    // If we have app data to send, push it through SSL write, which
-    // will hit the memory BIO. 
+    // If we have app data to send/write, push it through SSL write, which will hit the memory BIO. 
     if (app_to_ssl->size() > 0) {
+        // OpenSSL先对app_to_ssl进行加密，然后调用BIO_write，即调用send/write
         int rc = SSL_write(ssl, app_to_ssl->data(), app_to_ssl->size());
-        
         check_ssl_(rc);
-
         if ( rc == app_to_ssl->size() ) {
         	app_to_ssl->rebuild(0);
         }
 	}
-    
+
     net_read_();
     net_write_();
 }
@@ -81,6 +79,7 @@ bool TLSZmq::can_recv() {
 }
 
 bool TLSZmq::needs_write() {
+    printf("send tls size:%u\n", ssl_to_zmq->size());
     return ssl_to_zmq->size() > 0;
 }
 
@@ -96,6 +95,7 @@ zmq::message_t *TLSZmq::read() {
 }
 
 zmq::message_t *TLSZmq::get_data() {
+    // why not return ssl_to_zmq directly?
     zmq::message_t *msg = new zmq::message_t(ssl_to_zmq->size());
     memcpy (msg->data(), ssl_to_zmq->data(), ssl_to_zmq->size());
     ssl_to_zmq->rebuild(0);
@@ -126,12 +126,11 @@ SSL_CTX *TLSZmq::init_ctx(int mode) {
     } else {
     	throw TLSException("Error: Invalid SSL mode. Valid modes are TLSZmq::SSL_CLIENT and TLSZmq::SSL_SERVER");
     }
-
-    SSL_CTX *ctxt = SSL_CTX_new (meth);
+    //创建的SSL会话环境称为CTX
+    SSL_CTX *ctxt = SSL_CTX_new(meth);
     if(!ctxt) {
         ERR_print_errors_fp(stderr);
     }
-    
     return ctxt;
 }
 
@@ -139,6 +138,10 @@ void TLSZmq::init_(SSL_CTX *ctxt)
 {
     ssl = SSL_new(ctxt);
     
+    /*
+    这个函数创建并返回一个相应的新的BIO，并根据给定的BIO_METHOD类型调用BIO_set()函数给BIO结构的method成员赋值，
+    如果创建或给method赋值失败，则返回NULL。创建一个Memory类型的BIO例子如下：BIO* mem=BIO_new(BIO_s_mem());
+    */
     rbio = BIO_new(BIO_s_mem());
     wbio = BIO_new(BIO_s_mem());
     SSL_set_bio(ssl, rbio, wbio);
@@ -173,11 +176,11 @@ void TLSZmq::net_write_() {
 
 void TLSZmq::net_read_() {
     std::string aread;
-    // Read data for the application from the encrypted connection and place it in the string for the app to read
+    // Read data for the application from the encrypted connection and 
+    // place it in the string for the app to read
     while (1) {
         char readto[1024];
         int read = SSL_read(ssl, readto, 1024);
-
         check_ssl_(read);
 
         if (read > 0) {
@@ -190,7 +193,6 @@ void TLSZmq::net_read_() {
 		if (SSL_ERROR_ZERO_RETURN == SSL_get_error(ssl, read) ) {
 			SSL_shutdown(ssl);
 		}
-
         break;
     }
     
@@ -207,10 +209,8 @@ void TLSZmq::check_ssl_(int rc) {
         return;
     }
 
-    if (err == SSL_ERROR_SYSCALL ||
-            err == SSL_ERROR_SSL) {
+    if (err == SSL_ERROR_SYSCALL || err == SSL_ERROR_SSL) {
         throw TLSException(err);
     }
-
     return;
 }
