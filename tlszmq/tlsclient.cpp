@@ -7,7 +7,7 @@ void write_message(const std::unique_ptr<TLSZmq>& tls, zmq::socket_t *socket) {
     if(tls->needs_write()) {
         zmq::message_t *data = tls->get_data();
         socket->send(*data);
-        printf("send tls data: %s\n", (char*)data->data());
+        printf("client send tls data: %s\n", (char*)data->data());
         delete data;
     }
 }
@@ -15,9 +15,10 @@ void write_message(const std::unique_ptr<TLSZmq>& tls, zmq::socket_t *socket) {
 zmq::message_t *read_message(const std::unique_ptr<TLSZmq>& tls, zmq::socket_t *socket) {
 	zmq::message_t response;
 	socket->recv (&response);
+
     // recv的数据是tls加密后，需要放入tls进行解密
 	tls->put_data(&response);
-
+    printf("client recv tls data: %s\n", response.data());
     if(tls->can_recv()) {
         return tls->read();
     }

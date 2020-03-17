@@ -13,11 +13,14 @@ std::string read_message(zmq::message_t *request, zmq::socket_t *socket) {
     do {
         socket->recv(request);
         size = request->size();
+
+        printf("srv recv size: %d\n", size);
+
         if (size > 0) {
             id.assign(static_cast<char*>(request->data()), request->size());
-        }
 
-        socket->send(*request, ZMQ_SNDMORE);
+            socket->send(*request, ZMQ_SNDMORE);
+        }
     } while(size > 0);
 
     // read data
@@ -54,10 +57,14 @@ int main(int argc, char* argv[]) {
             if(conns.find(ident) == conns.end() || conns.find(ident)->second == NULL) {
                 tls = new TLSZmq(ssl_context, s_crt.c_str(), s_key.c_str());
                 conns[ident] = tls;
+
+                printf("new client connected...\n");
+                tls->show_certs();
             } else {
                 tls = conns[ident];
             }
 
+            printf("recv msg size:%u\n", request.size());
             // recv的数据是tls加密后的，还需要用tls解密
             tls->put_data(&request);
             zmq::message_t *data = tls->read();
@@ -70,6 +77,9 @@ int main(int argc, char* argv[]) {
                 printf("sending data - [%s]\n", response.data());
                 tls->write(&response);
                 delete data;
+            }
+            else {
+                printf("Received NULL msg\n");
             }
 
             write_message(tls, &s1);

@@ -16,6 +16,10 @@ recv:  zmq_to_ssl  --> ssl_to_app  --> ....
 openssl可以使用SSL和BIO两种方式实现SSL，如果使用BIO方式，那么就是上面说的这一种，
 最终的IO是要调用BIO_write和 BIO_read来进行的，用BIO实现的ssl关键在于在io之前必须
 设置好套接字BIO和ssl类型的BIO以及SSL结构体之间的联系，这是通过 BIO_set_ssl和BIO_push来实现的。 
+
+SSL层设置为在缓冲模式下工作.因此,执行SSL_write意味着我们将未加密的字节发送到SSL库,
+以便它可以加密这些字节并将生成的加密字节放入缓冲区.然后我们从缓冲区读取使用BIO_read.
+反向读取相同的东西.在这种情况下,我们实际上做了BIO_write然后是SSL_read.
 */
 
 class TLSZmq {
@@ -38,6 +42,7 @@ class TLSZmq {
         void put_data(zmq::message_t *msg);
 
         void shutdown();
+        void show_certs();
 
     private:
         void init_(SSL_CTX *ctxt);
